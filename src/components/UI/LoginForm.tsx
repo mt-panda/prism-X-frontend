@@ -74,7 +74,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleOpenModal, setIsModalOpen, 
       console.log("Login payload:", { email: userEmail, password: userPassword });
       
       console.log("About to make fetch request...");
-      const response = await fetch(`${backendUrl}/api/users/login`, {
+      const response = await fetch(`${backendUrl}/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -93,18 +93,22 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleOpenModal, setIsModalOpen, 
       console.log("Response JSON parsed successfully");
       console.log("Login response:", responseData);
       
-      if (response.ok) {
+      if (response.ok && responseData.success) {
+        const { user, token } = responseData.data;
+
         auth.login(
-          responseData.user.id,
-          responseData.user.userRole,
-          responseData.user.token,
-          responseData.user.email
+          user.id,
+          user.role,
+          token,
+          user.email
         );
-        if (responseData.user.userRole == 1) {
+
+        if (user.role === "admin") {
           navigate("/dashboard/createuser");
-        } else {
+        } else if (user.role === "user") {
           navigate("/dashboard/createlisting");
         }
+        
 
         if (setIsModalOpen) {
           setIsModalOpen(false);
@@ -264,7 +268,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleOpenModal, setIsModalOpen, 
                 style={{
                   cursor: "pointer",
                 }}
-                onClick={handleOpenModal ? () => handleOpenModal("register") : undefined}
+                onClick={handleOpenModal ? handleOpenModal : undefined}
               >
                 {" "}
                 Register

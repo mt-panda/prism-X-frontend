@@ -24,23 +24,46 @@ import { AuthContext } from "../context/auth-context.tsx";
 import { useListings } from "../context/ListingsContext";
 
 /* ---------------- Types ---------------- */
-interface Listing {
-  id?: string;
-  slug?: string;
-  title?: string;
-  desc?: string;
-  aboutBusiness?: string;
-  address?: string;
-  category?: string;
-  phone?: string;
-  website?: string;
-  image?: string;
-  image1?: string;
-  image2?: string;
-  image3?: string;
-  image4?: string;
-  mapUrl?: string;
-  [key: string]: any;
+export interface Listing {
+  id: string;
+  creator: string;
+  title: string;
+  desc: string;
+  address: string;
+  slug: string;
+  phone: string;
+  category: string;
+  city: string;
+  region: string;
+  status: "active" | "pending";
+  createdAt: string;
+  updatedAt: string;
+
+  // Optional fields
+  website?: string | null;
+  priceRange?: string | null;
+  accountingAndTaxService?: string | null;
+  area?: string | null;
+  businessLogo?: string | null;
+  businessBanner?: string | null;
+  image?: string | null;
+  images?: string[] | null | string; // sometimes array, sometimes JSON string
+  intro?: string | null;
+  aboutUs?: string | null;
+  whyUs?: string | null;
+  latestProjectIntro?: string | null;
+  ourMission?: string | null;
+  contactUsIntro?: string | null;
+  mapUrl?: string | null;
+  featured?: boolean;
+
+  // Related user
+  user?: {
+    id: string;
+    username: string;
+    email: string;
+    role: "user" | "admin";
+  };
 }
 
 const useStyles = makeStyles(() => ({
@@ -56,22 +79,24 @@ const ListingDetails: React.FC = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const type = queryParams.get("type");
-  const { id } = useParams();
-  console.log("params:>", useParams());
+  const { pid } = useParams();
 
   const classes = useStyles();
   const { listings, loading, error } = useListings();
 
-  const [listing, setListing] = useState<Listing | null>(listings);
+  const [listing, setListing] = useState<Listing | null>(null);
 
   useEffect(() => {
-    if (id && listings.length > 0) {
+    if (pid && listings.length > 0) {
       const found = listings.find(
-        (item) => item.id === id || item.id === id || item.slug === id
+        (item) => item.id === pid || item.slug === pid
       );
-      setListing(found || null);
+      if (found) {
+        setListing(found);
+        console.log("Selected Listing: ", found);
+      }
     }
-  }, [id, listings]);
+  }, [pid, listings]);
 
   // Loading state
   if (loading) {
@@ -113,393 +138,351 @@ const ListingDetails: React.FC = () => {
 
   const shouldHide = listing.website === "https://www.example.com/";
 
+  // Normalize images (handle stringified JSON or array)
+  let galleryImages: string[] = [];
+  if (Array.isArray(listing.images)) {
+    galleryImages = listing.images;
+  } else if (typeof listing.images === "string") {
+    try {
+      galleryImages = JSON.parse(listing.images);
+    } catch {
+      galleryImages = [];
+    }
+  }
+
   return (
-    <>
-      {/* ---------- MAIN SECTION WRAPPER ---------- */}
-      <Box
-        component="main"
-        sx={{
-          bgcolor: theme.palette.common.white,
-          color: theme.palette.common.black,
-          fontFamily: "poppins",
-          px: { xs: 2, sm: 3, md: 4 },
-          pt: { xs: 26, sm: 24, md: 16 },
-          pb: { xs: 5, sm: 8, md: 8 },
-          minHeight: "100vh",
-        }}
-      >
-        <Container maxWidth={false}>
-          <Grid spacing={2} container flex={1}>
-            {/* ---------- Top Container: IMAGES ---------- */}
-            <Grid
-              spacing={5}
-              container
-              sx={{
-                display: "flex",
-                flexGrow: 1,
-                justifyContent: "space-between",
-                alignItems: "flex-end",
-                maxHeight: "60vh",
-                overflow: "hidden",
-              }}
-            >
-              {/* ---------- LEFT COLUMN: MAIN IMAGE ---------- */}
-              <Grid
-                item
-                xs={12}
-                lg={6}
-                flex={2}
-                component="div"
-                {...({} as any)}
+    <Box
+      component="main"
+      sx={{
+        bgcolor: theme.palette.common.white,
+        color: theme.palette.common.black,
+        fontFamily: "poppins",
+        px: { xs: 2, sm: 3, md: 4 },
+        pt: { xs: 26, sm: 24, md: 16 },
+        pb: { xs: 5, sm: 8, md: 8 },
+        minHeight: "100vh",
+      }}
+    >
+      <Container maxWidth={false}>
+        <Grid spacing={2} container flex={1}>
+          {/* ---------- Top Container: IMAGES ---------- */}
+          <Grid
+            spacing={5}
+            container
+            sx={{
+              display: "flex",
+              flexGrow: 1,
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              maxHeight: "60vh",
+              overflow: "hidden",
+            }}
+          >
+            {/* ---------- LEFT COLUMN: MAIN IMAGE ---------- */}
+            <Grid flex={2} component="div">
+              <Box
+                sx={{
+                  width: "100%",
+                  height: { xs: 250, sm: 350, md: 505 },
+                  borderRadius: 2,
+                  overflow: "hidden",
+                }}
               >
-                <Box
+                <CardMedia
+                  component="img"
+                  image={listing.image || ""}
+                  alt={listing.title}
                   sx={{
                     width: "100%",
-                    height: { xs: 250, sm: 350, md: 505 }, // consistent main image height
-                    borderRadius: 2,
-                    overflow: "hidden",
+                    height: "100%",
+                    objectFit: "cover",
                   }}
-                >
-                  <CardMedia
-                    component="img"
-                    image={listing.image}
-                    alt={listing.title}
-                    sx={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover", // keep contained/cropped
-                    }}
-                  />
-                </Box>
-              </Grid>
+                />
+              </Box>
+            </Grid>
 
-              {/* ---------- RIGHT COLUMN (top area): 4 SMALL IMAGES ---------- */}
+            {/* ---------- RIGHT COLUMN (top area): 4 SMALL IMAGES ---------- */}
+            <Grid flex={1} component="div">
               <Grid
-                item
-                xs={12}
-                lg={6}
-                flex={1}
-                component="div"
-                {...({} as any)}
+                container
+                spacing={6}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
               >
-                <Grid
-                  container
-                  spacing={6}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  {[
-                    listing.image1,
-                    listing.image2,
-                    listing.image3,
-                    listing.image4,
-                  ].map(
-                    (img, i) =>
-                      img && (
-                        <Grid
-                          item
-                          xs={6}
-                          key={i}
-                          width="45%"
-                          component="div"
-                          {...({} as any)}
+                {galleryImages.map(
+                  (img: string, i: number) =>
+                    img && (
+                      <Grid key={i} width="45%" component="div">
+                        <Box
+                          sx={{
+                            width: "100%",
+                            aspectRatio: "1 / 1",
+                            borderRadius: 2,
+                            overflow: "hidden",
+                          }}
                         >
-                          <Box
+                          <CardMedia
+                            component="img"
+                            image={img}
+                            alt={`${listing.title}-${i}`}
                             sx={{
                               width: "100%",
-                              aspectRatio: "1 / 1", // ✅ ensures perfect squares
-                              borderRadius: 2,
-                              overflow: "hidden",
+                              height: "100%",
+                              objectFit: "cover",
                             }}
-                          >
-                            <CardMedia
-                              component="img"
-                              image={img}
-                              alt={`${listing.title}-${i}`}
-                              sx={{
-                                width: "100%",
-                                height: "100%",
-                                objectFit: "cover", // consistent look (crop-style)
-                              }}
-                            />
-                          </Box>
-                        </Grid>
-                      )
-                  )}
-                </Grid>
+                          />
+                        </Box>
+                      </Grid>
+                    )
+                )}
               </Grid>
             </Grid>
+          </Grid>
 
-            {/* ---------- MIDDLE COLUMN: DETAILS, RELATED BUSINESSES, REVIEWS ---------- */}
-            <Grid
-              item
-              xs={12}
-              md={8}
-              lg={8}
-              component="div"
-              {...({} as any)}
-              flex={3}
-            >
-              <Box component="section">
-                {/* Category */}
-                <Typography
-                  variant="h5"
-                  sx={{ marginTop: "20px" }}
-                  style={{
-                    fontSize: "16px",
-                    lineHeight: "42px",
-                    fontWeight: 600,
-                    fontFamily: "poppins",
-                    marginTop: "10px",
-                    color: theme.palette.text.secondary,
-                  }}
-                >
-                  Category:<span> {listing.category} </span>
-                </Typography>
-
-                {/* Title with external link */}
-                <Typography
-                  variant="h5"
-                  style={{
-                    fontSize: "25px",
-                    lineHeight: "42px",
-                    fontWeight: 600,
-                    fontFamily: "poppins",
-                    marginTop: "10px",
-                    color: theme.palette.primary.hover,
-                  }}
-                >
-                  {listing.title}
-                  <Link
-                    style={{ textDecoration: "none", color: "unset" }}
-                    to={`/business/${listing.slug}?type=${type}`}
-                  >
-                    <OpenInNew
-                      sx={{
-                        marginLeft: "3px",
-                        fontSize: "15px",
-                        mb: "10px",
-                        "&:hover": { color: theme.palette.primary.focus },
-                      }}
-                    />
-                  </Link>
-                </Typography>
-
-                {/* Address line */}
-                <Typography
-                  variant="body2"
-                  sx={{ color: theme.palette.primary.hover, textAlign: "left" }}
-                >
-                  <RoomIcon
-                    sx={{ fontSize: "19px", position: "relative", top: "4px" }}
-                  />{" "}
-                  {listing.address}
-                </Typography>
-
-                {/* Description */}
-                <Typography
-                  variant="h5"
-                  sx={{ marginTop: "20px" }}
-                  style={{
-                    fontSize: "16px",
-                    lineHeight: "42px",
-                    fontWeight: 600,
-                    fontFamily: "poppins",
-                    marginTop: "10px",
-                    color: theme.palette.primary.hero,
-                  }}
-                  dangerouslySetInnerHTML={{ __html: listing.desc ?? "" }}
-                ></Typography>
-
-                {/* About Business */}
-                <Typography
-                  variant="body1"
-                  sx={{ marginTop: "20px", paddingRight: "25px" }}
-                  style={{
-                    fontSize: "14px",
-                    lineHeight: "22px",
-                    fontWeight: 400,
-                    fontFamily: "poppins",
-                    marginTop: "10px",
-                    color: theme.palette.primary.hero,
-                  }}
-                >
-                  {listing.aboutBusiness}
-                </Typography>
-              </Box>
-
-              {/* Related businesses */}
-              <RealtedBusinessCard
-                listingforCategory={{
-                  ...listing,
-                  category: listing.category ?? "",
-                  slug: listing.slug ?? "",
-                }}
-                listing={{
-                  ...listing,
-                  category: listing.category ?? "",
-                  slug: listing.slug ?? "",
-                }}
-              />
-
-              {/* Reviews */}
-              <Box component="section" sx={{ pr: { md: 3 } }}>
-                <Review />
-              </Box>
-            </Grid>
-
-            {/* ---------- RIGHT SIDEBAR: CONTACT DETAILS + MAP ---------- */}
-            <Grid
-              item
-              xs={12}
-              md={4}
-              lg={4}
-              style={{
-                position: "sticky",
-                top: "150px",
-                alignSelf: "flex-start",
-              }}
-              component="div"
-              {...({} as any)}
-              flex={1}
-            >
-              {/* Contact Details Card */}
-              <Paper
-                elevation={3}
-                sx={{
-                  marginTop: "20px",
-                  padding: "26px 36px",
-                  boxShadow:
-                    " rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px",
+          {/* ---------- MIDDLE COLUMN: DETAILS ---------- */}
+          <Grid component="div" flex={3}>
+            <Box component="section">
+              <Typography
+                variant="h5"
+                sx={{ marginTop: "20px" }}
+                style={{
+                  fontSize: "16px",
+                  lineHeight: "42px",
+                  fontWeight: 600,
+                  fontFamily: "poppins",
+                  marginTop: "10px",
+                  color: theme.palette.text.secondary,
                 }}
               >
-                {/* Phone */}
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontWeight: "500",
-                    fontSize: { xs: "11px", md: "13px" },
-                    lineHeight: "2.4rem",
-                    fontFamily: "poppins",
-                    color: theme.palette.primary.hero,
-                  }}
-                >
-                  <a
-                    href={`tel:${listing.phone}`}
-                    style={{ textDecoration: "none", color: " unset" }}
-                  >
-                    <CallIcon
-                      sx={{ color: theme.palette.primary.focus, mr: 2 }}
-                      className={classes.cardIcon}
-                    />
-                    <span>{listing.phone}</span>
-                  </a>
-                </Typography>
+                Category:<span> {listing.category} </span>
+              </Typography>
 
-                {/* Address */}
-                <Typography
-                  component="div"
-                  variant="body1"
-                  sx={{
-                    fontWeight: "500",
-                    fontSize: { xs: "11px", md: "13px" },
-                    lineHeight: "2.4rem",
-                    fontFamily: "poppins",
-                    color: theme.palette.primary.hero,
-                    display: "flex",
-                  }}
+              <Typography
+                variant="h5"
+                style={{
+                  fontSize: "25px",
+                  lineHeight: "42px",
+                  fontWeight: 600,
+                  fontFamily: "poppins",
+                  marginTop: "10px",
+                  color: theme.palette.primary.hover,
+                }}
+              >
+                {listing.title}
+                <Link
+                  style={{ textDecoration: "none", color: "unset" }}
+                  to={`/business/${listing.slug}?type=${type}`}
                 >
-                  <RoomIcon
+                  <OpenInNew
+                    sx={{
+                      marginLeft: "3px",
+                      fontSize: "15px",
+                      mb: "10px",
+                      "&:hover": { color: theme.palette.primary.focus },
+                    }}
+                  />
+                </Link>
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{ color: theme.palette.primary.hover, textAlign: "left" }}
+              >
+                <RoomIcon
+                  sx={{ fontSize: "19px", position: "relative", top: "4px" }}
+                />{" "}
+                {listing.address}
+              </Typography>
+
+              <Typography
+                variant="h5"
+                sx={{ marginTop: "20px" }}
+                style={{
+                  fontSize: "16px",
+                  lineHeight: "42px",
+                  fontWeight: 600,
+                  fontFamily: "poppins",
+                  marginTop: "10px",
+                  color: theme.palette.primary.hero,
+                }}
+                dangerouslySetInnerHTML={{ __html: listing.desc ?? "" }}
+              ></Typography>
+
+              <Typography
+                variant="body1"
+                sx={{ marginTop: "20px", paddingRight: "25px" }}
+                style={{
+                  fontSize: "14px",
+                  lineHeight: "22px",
+                  fontWeight: 400,
+                  fontFamily: "poppins",
+                  marginTop: "10px",
+                  color: theme.palette.primary.hero,
+                }}
+              >
+                {listing.aboutUs}
+              </Typography>
+            </Box>
+
+            {/* Related businesses */}
+            <RealtedBusinessCard
+              listingforCategory={{
+                ...listing,
+                category: listing.category ?? "",
+                slug: listing.slug ?? "",
+              }}
+              listing={{
+                ...listing,
+                category: listing.category ?? "",
+                slug: listing.slug ?? "",
+              }}
+            />
+
+            {/* Reviews */}
+            <Box component="section" sx={{ pr: { md: 3 } }}>
+              <Review />
+            </Box>
+          </Grid>
+
+          {/* ---------- RIGHT SIDEBAR: CONTACT DETAILS + MAP ---------- */}
+          <Grid
+            style={{
+              position: "sticky",
+              top: "150px",
+              alignSelf: "flex-start",
+            }}
+            component="div"
+            flex={1}
+          >
+            <Paper
+              elevation={3}
+              sx={{
+                marginTop: "20px",
+                padding: "26px 36px",
+                boxShadow:
+                  " rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px",
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: "500",
+                  fontSize: { xs: "11px", md: "13px" },
+                  lineHeight: "2.4rem",
+                  fontFamily: "poppins",
+                  color: theme.palette.primary.hero,
+                }}
+              >
+                <a
+                  href={`tel:${listing.phone}`}
+                  style={{ textDecoration: "none", color: "unset" }}
+                >
+                  <CallIcon
                     sx={{ color: theme.palette.primary.focus, mr: 2 }}
                     className={classes.cardIcon}
                   />
-                  <div>{listing.address}</div>
-                </Typography>
+                  <span>{listing.phone}</span>
+                </a>
+              </Typography>
 
-                {/* Website */}
-                <Typography
-                  component="div"
-                  variant="body1"
-                  sx={{
-                    fontWeight: "500",
-                    fontSize: { xs: "11px", md: "13px" },
-                    lineHeight: "2.4rem",
-                    fontFamily: "poppins",
-                    color: theme.palette.primary.hero,
-                  }}
-                >
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href={listing.website}
-                    style={{ textDecoration: "none", color: "unset" }}
-                  >
-                    <PublicIcon
-                      sx={{ color: theme.palette.primary.focus, mr: 2 }}
-                      className={classes.cardIcon}
-                    />
-                    {!shouldHide ? (
-                      <span>{listing.website}</span>
-                    ) : (
-                      <span style={{ paddingLeft: "10px" }}>-</span>
-                    )}
-                  </a>
-                </Typography>
-              </Paper>
-
-              {/* Map Card */}
-              <Paper
-                elevation={3}
+              <Typography
+                component="div"
+                variant="body1"
                 sx={{
-                  marginTop: "20px",
-                  padding: "15px 0px 0px",
-                  boxShadow:
-                    " rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px",
+                  fontWeight: "500",
+                  fontSize: { xs: "11px", md: "13px" },
+                  lineHeight: "2.4rem",
+                  fontFamily: "poppins",
+                  color: theme.palette.primary.hero,
+                  display: "flex",
                 }}
               >
-                {/* Directions */}
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontWeight: "500",
-                    fontSize: { xs: "11px", md: "18px" },
-                    paddingBottom: "12px",
-                    lineHeight: "2.4rem",
-                    fontFamily: "poppins",
-                    color: theme.palette.primary.hero,
-                    textAlign: "center",
-                  }}
-                >
-                  <a
-                    target="blank"
-                    style={{ textDecoration: "none", color: "unset" }}
-                  >
-                    <DirectionsIcon
-                      sx={{ color: theme.palette.primary.focus, mr: 1 }}
-                      className={classes.cardIcon}
-                    />
-                    <span>Direction</span>
-                  </a>
-                </Typography>
+                <RoomIcon
+                  sx={{ color: theme.palette.primary.focus, mr: 2 }}
+                  className={classes.cardIcon}
+                />
+                <div>{listing.address}</div>
+              </Typography>
 
-                {/* Embedded Map */}
-                <iframe
-                  src={listing.mapUrl}
-                  width="100%"
-                  height="250px"
-                  style={{ border: 0, position: "relative", top: "6px" }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                ></iframe>
-              </Paper>
-            </Grid>
+              <Typography
+                component="div"
+                variant="body1"
+                sx={{
+                  fontWeight: "500",
+                  fontSize: { xs: "11px", md: "13px" },
+                  lineHeight: "2.4rem",
+                  fontFamily: "poppins",
+                  color: theme.palette.primary.hero,
+                }}
+              >
+                <a
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={listing.website || "#"}
+                  style={{ textDecoration: "none", color: "unset" }}
+                >
+                  <PublicIcon
+                    sx={{ color: theme.palette.primary.focus, mr: 2 }}
+                    className={classes.cardIcon}
+                  />
+                  {!shouldHide ? (
+                    <span>{listing.website}</span>
+                  ) : (
+                    <span style={{ paddingLeft: "10px" }}>-</span>
+                  )}
+                </a>
+              </Typography>
+            </Paper>
+
+            <Paper
+              elevation={3}
+              sx={{
+                marginTop: "20px",
+                padding: "15px 0px 0px",
+                boxShadow:
+                  " rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px",
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: "500",
+                  fontSize: { xs: "11px", md: "18px" },
+                  paddingBottom: "12px",
+                  lineHeight: "2.4rem",
+                  fontFamily: "poppins",
+                  color: theme.palette.primary.hero,
+                  textAlign: "center",
+                }}
+              >
+                <a
+                  target="blank"
+                  style={{ textDecoration: "none", color: "unset" }}
+                >
+                  <DirectionsIcon
+                    sx={{ color: theme.palette.primary.focus, mr: 1 }}
+                    className={classes.cardIcon}
+                  />
+                  <span>Direction</span>
+                </a>
+              </Typography>
+
+              <iframe
+                src={listing.mapUrl || ""}
+                width="100%"
+                height="250px"
+                style={{ border: 0, position: "relative", top: "6px" }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </Paper>
           </Grid>
-        </Container>
-      </Box>
-    </>
+        </Grid>
+      </Container>
+    </Box>
   );
 };
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Grid,
   Box,
@@ -15,6 +15,7 @@ import DefaultImg from "../../assets/images/placeholder.png";
 import SectionIntro from "../Home/SectionIntro";
 import { Link } from "react-router-dom";
 import { useListings } from "../../context/ListingsContext";
+import axios from "axios";
 
 interface Listing {
   id: string | number;
@@ -34,11 +35,18 @@ function truncateDesc(desc: string): string {
 
 const FeaturedListing: React.FC = () => {
   const theme = useTheme();
-  const { places, loading, error } = useListings();
+  const { listings, loading, error, fetchListings } = useListings();
 
-  const featuredListings = Array.isArray(places)
-    ? places.filter((l: Listing) => l.featured).slice(0, 3)
-    : [];
+  useEffect(() => {
+    fetchListings(1, 20); 
+  }, []);
+
+  console.log("Latest Places: ", listings);
+
+  const featuredListings = listings
+    .filter((l) => Boolean(l.featured))
+    .slice(0, 3);
+  console.log("featuredListings", featuredListings);
 
   return (
     <Box
@@ -168,7 +176,7 @@ const FeaturedListing: React.FC = () => {
                       >
                         <CardMedia
                           component="img"
-                          image={item.image || DefaultImg}
+                          image={item.images?.[0] || DefaultImg}
                           sx={{
                             height: { md: "240px", sm: "220px", xs: "180px" },
                             objectFit: "cover",

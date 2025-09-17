@@ -102,7 +102,7 @@ const StyledHader: React.FC = () => {
   const theme = useTheme();
   return (
     <>
-      <Grid container xs={12} component="div" {...({} as any)}>
+      <Grid container component="div" {...({} as any)}>
         <StyledHeader mt={{ xs: 0, md: 0 }}>
           <StyledHeaderItem
             px={{ xs: 4, md: 12 }}

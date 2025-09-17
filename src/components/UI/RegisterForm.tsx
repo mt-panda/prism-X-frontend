@@ -59,29 +59,36 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
         formData.append("image", selectedImage);
       }
 
-      const responseData: any = await apiClient.post(`/api/users/signup`, formData);
-      if (responseData) {
-        auth.login(
-          responseData.user.id,
-          responseData.user.userRole,
-          responseData.user.token,
-          responseData.user.email
-        );
-        if (responseData.user.userRole === 1) {
+      const responseData: any = await apiClient.post(
+        `/users/signup`,
+        formData
+      );
+
+      if (responseData && responseData.data) {
+        const { user, token } = responseData.data;
+
+        auth.login(user.id, user.role, token, user.email);
+
+        if (user.role === "admin") {
           navigate("/dashboard/createuser");
         } else {
           navigate("/dashboard/createlisting");
         }
+
         if (setIsModalOpen) {
           setIsModalOpen(false);
         }
+      } else {
+        setErrorMessage("Signup failed. Please try again.");
       }
     } catch (err) {
+      console.error("Signup error:", err);
       setErrorMessage("Something went wrong. Please try again later.");
     } finally {
       setIsLoading(false);
     }
   };
+  
 
   return (
     <Box

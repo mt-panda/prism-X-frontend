@@ -24,7 +24,7 @@
 
 
 
-import React from "react";
+import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "../src/context/auth-context.tsx";
 import { Outlet } from "react-router-dom";
@@ -51,7 +51,7 @@ import LoginForm from "./components/UI/LoginForm";
 import RegisterForm from "./components/UI/RegisterForm";
 
 import ListingComapanyDetails from "./pages/ListingCompanyDetails";
-import { ListingsProvider } from "./context/ListingsContext.js";
+import { ListingsProvider, useListings } from "./context/ListingsContext.js";
 
 const MainLayout = () => (
   <>
@@ -72,6 +72,9 @@ const NotFoundLayout = () => (
 );
 
 const App = () => {
+
+  
+
   return (
     <AuthProvider>
       <ListingsProvider>
@@ -86,6 +89,13 @@ const App = () => {
 };
 
 const AppRoutes = () => {
+
+  const { fetchListings } = useListings();
+
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
   const router = createBrowserRouter([
     {
       path: "/",
@@ -135,11 +145,11 @@ const AppRoutes = () => {
           path: "/dashboard",
           element: (
             <ProtectedRoute>
-              <PendingCounterProvider>
-                <DashboardProvider>
+              {/* <PendingCounterProvider> */}
+                {/* <DashboardProvider> */}
                   <DashBoard />
-                </DashboardProvider>
-              </PendingCounterProvider>
+                {/* </DashboardProvider> */}
+              {/* </PendingCounterProvider> */}
             </ProtectedRoute>
           ),
           children: [

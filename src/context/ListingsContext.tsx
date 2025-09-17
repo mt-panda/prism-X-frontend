@@ -1,189 +1,210 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, type ReactNode } from "react";
 import axios from "axios";
-import type { Place, Pending } from "../types/models"; 
 
-// -------------------
-// Context Types
-// -------------------
+// -------------------- Types --------------------
+export interface Place {
+  id: string;
+  creator: string;
+  title: string;
+  desc: string;
+  address: string;
+  slug: string;
+  phone: string;
+  category: string;
+  city: string;
+  region: string;
+  status: "active" | "pending";
+  createdAt: string;
+  updatedAt: string;
+
+  // Optional fields
+  website?: string | null;
+  priceRange?: string | null;
+  accountingAndTaxService?: string | null;
+  area?: string | null;
+  businessLogo?: string | null;
+  businessBanner?: string | null;
+  image?: string | null;
+  images?: string[] | null;
+  intro?: string | null;
+  aboutUs?: string | null;
+  whyUs?: string | null;
+  latestProjectIntro?: string | null;
+  ourMission?: string | null;
+  contactUsIntro?: string | null;
+  mapUrl?: string | null;
+  featured?: boolean;
+
+  // Related user
+  user?: {
+    id: string;
+    username: string;
+    email: string;
+    role: "user" | "admin";
+  };
+}
+
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 interface ListingsContextType {
-  places: Place[];
-  pendings: Pending[];
+  listings: Place[];
   loading: boolean;
   error: string | null;
 
-  fetchPlaces: () => Promise<void>;
-  fetchPendings: () => Promise<void>;
-
-  createPlace: (data: Partial<Place>) => Promise<Place | null>;
-  createPending: (data: Partial<Pending>) => Promise<Pending | null>;
-
-  updatePlace: (id: string, data: Partial<Place>) => Promise<Place | null>;
-  deletePlace: (id: string) => Promise<boolean>;
-
-  // Admin actions
-  approvePending: (id: string) => Promise<Place | null>;
-  rejectPending: (id: string) => Promise<boolean>;
+  fetchListings: (
+    page?: number,
+    limit?: number,
+    filters?: Record<string, string>
+  ) => Promise<Pagination | null>;
+  fetchListingById: (id: string) => Promise<Place | null>;
+  fetchListingBySlug: (slug: string) => Promise<Place | null>;
+  createListing: (data: Partial<Place>) => Promise<Place | null>;
+  updateListing: (id: string, data: Partial<Place>) => Promise<Place | null>;
+  deleteListing: (id: string) => Promise<void>;
 }
 
+// -------------------- Context --------------------
 const ListingsContext = createContext<ListingsContextType | undefined>(
   undefined
 );
 
-// -------------------
-// Provider Component
-// -------------------
 export const ListingsProvider = ({ children }: { children: ReactNode }) => {
-  const [places, setPlaces] = useState<Place[]>([]); // ✅ not undefined
-  const [pendings, setPendings] = useState<Pending[]>([]);
+  const [listings, setListings] = useState<Place[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const API_BASE = import.meta.env.VITE_BACKEND_URL;
+  const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
-  // -------------------
-  // API Calls
-  // -------------------
-  const fetchPlaces = async () => {
-    setLoading(true);
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  // -------------------- API Functions --------------------
+
+  const fetchListings = async (
+    page: number = 1,
+    limit: number = 10,
+    filters: Record<string, string> = {}
+  ) => {
     try {
-      const res = await axios.get<Place[]>(`${API_BASE}/places`);
-      setPlaces(res.data);
-      setError(null);
+      setLoading(true);
+      const res = await axios.get(`${API_URL}/places`, {
+        params: { page, limit, ...filters },
+      });
+
+      const data = res.data?.data;
+      const places = data?.data ?? [];
+      const pagination: Pagination = data?.pagination ?? {
+        page,
+        limit,
+        total: 0,
+        totalPages: 0,
+      };
+
+      setListings(places);
+      return pagination;
     } catch (err: any) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchPendings = async () => {
-    setLoading(true);
+  const fetchListingById = async (id: string) => {
     try {
-      const res = await axios.get<Pending[]>(`${API_BASE}/pendings`);
-      setPendings(res.data);
-      setError(null);
+      setLoading(true);
+      const res = await axios.get(`${API_URL}/places/${id}`);
+      return res.data?.data as Place;
     } catch (err: any) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
-  const createPlace = async (data: Partial<Place>) => {
+  const fetchListingBySlug = async (slug: string) => {
     try {
-      const res = await axios.post<Place>(`${API_BASE}/places`, data);
-      setPlaces((prev) => [...prev, res.data]);
-      return res.data;
-    } catch (err) {
-      console.error(err);
+      setLoading(true);
+      const res = await axios.get(`${API_URL}/places/slug/${slug}`);
+      return res.data?.data as Place;
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message);
       return null;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const createPending = async (data: Partial<Pending>) => {
+  const createListing = async (data: Partial<Place>) => {
     try {
-      const res = await axios.post<Pending>(`${API_BASE}/pendings`, data);
-      setPendings((prev) => [...prev, res.data]);
-      return res.data;
-    } catch (err) {
-      console.error(err);
+      setLoading(true);
+      const res = await axios.post(`${API_URL}/places`, data, {
+        headers: getAuthHeaders(),
+      });
+      const place = res.data?.data as Place;
+      setListings((prev) => [...prev, place]);
+      return place;
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message);
       return null;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const updatePlace = async (id: string, data: Partial<Place>) => {
+  const updateListing = async (id: string, data: Partial<Place>) => {
     try {
-      const res = await axios.put<Place>(`${API_BASE}/places/${id}`, data);
-      setPlaces((prev) => prev.map((p) => (p.id === id ? res.data : p)));
-      return res.data;
-    } catch (err) {
-      console.error(err);
+      setLoading(true);
+      const res = await axios.put(`${API_URL}/places/${id}`, data, {
+        headers: getAuthHeaders(),
+      });
+      const updated = res.data?.data as Place;
+      setListings((prev) =>
+        prev.map((l) => (l.id === id ? { ...l, ...updated } : l))
+      );
+      return updated;
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message);
       return null;
+    } finally {
+      setLoading(false);
     }
   };
 
-  const deletePlace = async (id: string) => {
+  const deleteListing = async (id: string) => {
     try {
-      await axios.delete(`${API_BASE}/places/${id}`);
-      setPlaces((prev) => prev.filter((p) => p.id !== id));
-      return true;
-    } catch (err) {
-      console.error(err);
-      return false;
+      setLoading(true);
+      await axios.delete(`${API_URL}/places/${id}`, {
+        headers: getAuthHeaders(),
+      });
+      setListings((prev) => prev.filter((l) => l.id !== id));
+    } catch (err: any) {
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
     }
   };
-
-  // -------------------
-  // Admin Actions
-  // -------------------
-  const approvePending = async (id: string) => {
-    try {
-      // backend moves Pending -> Place automatically
-      const res = await axios.post<Place>(`${API_BASE}/pendings/approve/${id}`);
-      
-      // remove from pendings list
-      setPendings((prev) => prev.filter((p) => p.id !== id));
-      // add to places list
-      setPlaces((prev) => [...prev, res.data]);
-  
-      return res.data;
-    } catch (err) {
-      console.error("Failed to approve pending:", err);
-      return null;
-    }
-  };
-  
-  const rejectPending = async (id: string) => {
-    try {
-      await axios.delete(`${API_BASE}/pendings/reject/${id}`);
-      setPendings((prev) => prev.filter((p) => p.id !== id));
-      return true;
-    } catch (err) {
-      console.error("Failed to reject pending:", err);
-      return false;
-    }
-  };
-  
-  // optional stricter admin reject
-  const adminRejectPending = async (id: string) => {
-    try {
-      await axios.delete(`${API_BASE}/pendings/adminReject/${id}`);
-      setPendings((prev) => prev.filter((p) => p.id !== id));
-      return true;
-    } catch (err) {
-      console.error("Failed to admin reject pending:", err);
-      return false;
-    }
-  };
-  // -------------------
-  // Auto-fetch on mount
-  // -------------------
-  useEffect(() => {
-    fetchPlaces();
-    fetchPendings();
-  }, []);
 
   return (
     <ListingsContext.Provider
       value={{
-        places,
-        pendings,
+        listings,
         loading,
         error,
-        fetchPlaces,
-        fetchPendings,
-        createPlace,
-        createPending,
-        updatePlace,
-        deletePlace,
-        approvePending,
-        rejectPending,
+        fetchListings,
+        fetchListingById,
+        fetchListingBySlug,
+        createListing,
+        updateListing,
+        deleteListing,
       }}
     >
       {children}
@@ -191,13 +212,11 @@ export const ListingsProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// -------------------
-// Custom Hook
-// -------------------
+// -------------------- Hook --------------------
 export const useListings = () => {
   const context = useContext(ListingsContext);
   if (!context) {
-    throw new Error("useListings must be used inside ListingsProvider");
+    throw new Error("useListings must be used within ListingsProvider");
   }
   return context;
 };

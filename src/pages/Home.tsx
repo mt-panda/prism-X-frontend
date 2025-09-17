@@ -35,12 +35,7 @@ const Home: React.FC = () => {
       >
         <Grid container>
           <Grid
-            item
-            xs={12}
-            lg={8.8}
             sx={{ marginLeft: "auto", marginRight: "auto", px: 28 }}
-            component="div"
-            {...({} as any)}
           >
             <Paper
               elevation={3}
@@ -151,10 +146,6 @@ const Home: React.FC = () => {
                   ></Grid>
 
                   <Grid
-                    item
-                    xs={12}
-                    sm={2.9}
-                    lg={2.6}
                     sx={{
                       borderRight: {
                         xs: "0px solid #dee2e8",

@@ -7,7 +7,7 @@ import { CssBaseline, ThemeProvider } from '@mui/material';
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeProvider theme={theme}>
-      <CssBaseline /> {/* <-- removes default body margins */}
+      <CssBaseline />
       <App />
     </ThemeProvider>
   </StrictMode>
