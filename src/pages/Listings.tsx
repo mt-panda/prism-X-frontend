@@ -122,11 +122,6 @@ const Listings: React.FC = () => {
           <Grid container spacing={3} mt={2} m={0} pb={6} pt={3}>
             {/* Sidebar */}
             <Grid
-              item
-              xs={11.4}
-              sm={11.2}
-              lg={3}
-              md={3}
               sx={{
                 position: { xs: "relative", md: "sticky" },
                 top: { xs: "0px", md: "150px" },
@@ -165,10 +160,6 @@ const Listings: React.FC = () => {
 
             {/* Main Content */}
             <Grid
-              item
-              xs={11.7}
-              sm={11.2}
-              md={9}
               style={{
                 paddingLeft: "0px",
                 paddingTop: "0px",

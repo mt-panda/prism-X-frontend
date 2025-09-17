@@ -573,7 +573,10 @@ function Navbar() {
                   if (value && validPaths.includes(value)) {
                     return value;
                   }
-                  return undefined;
+                  if (location.pathname.startsWith("/listings/")) {
+                    return "/listings"; // highlight Listings tab for detail pages
+                  }
+                  return false; // ✅ fallback, no warning
                 })()}
                 onChange={(_event, newValue) => setValue(newValue)}
                 TabIndicatorProps={{ sx: { backgroundColor: "transparent" } }}

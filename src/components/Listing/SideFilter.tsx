@@ -67,7 +67,7 @@ const SideFilter: React.FC<SideFilterProps> = ({
   return (
     <Grid container spacing={2} sx={{ width: "auto" }}>
       {/* Categories */}
-      <Grid item xs={12} sm={6} md={12} component="div" {...({} as any)}>
+      <Grid component="div" {...({} as any)}>
         <Box sx={{ paddingLeft: { xs: 2, sm: 0 } }}>
           <Typography
             variant="h5"

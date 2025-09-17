@@ -93,7 +93,7 @@ const Footer = () => {
         <Container maxWidth="lg">
           <Grid container spacing={8} justifyContent={"space-between"}>
             {/* Logo + intro */}
-            <Grid item xs={12} md={3.4} component="div" {...({} as any)}>
+            <Grid component="div" {...({} as any)}>
               <Box mb={2} mt={-2}>
                 <Link to="/">
                   <IconButton component="div" aria-label="Cruip">
@@ -120,7 +120,7 @@ const Footer = () => {
             </Grid>
 
             {/* Quick Links */}
-            <Grid item xs={12} sm={4} md={2.4} component="div" {...({} as any)}>
+            <Grid component="div" {...({} as any)}>
               <FooterHeading
                 Text="Quick Links"
                 linebg={theme.palette.primary.focus}
@@ -174,10 +174,6 @@ const Footer = () => {
 
             {/* Newsletter */}
             <Grid
-              item
-              xs={12}
-              sm={4}
-              md={3}
               sx={{ maxWidth: "260px" }}
               component="div"
               {...({} as any)}
@@ -243,10 +239,6 @@ const Footer = () => {
 
             {/* Contact */}
             <Grid
-              item
-              xs={12}
-              sm={4}
-              md={3.2}
               sx={{ maxWidth: "280px", mt: { xs: 3, sm: 0 } }}
               component="div"
               {...({} as any)}
@@ -321,8 +313,6 @@ const Footer = () => {
             }}
           >
             <Grid
-              item
-              xs={12}
               sx={{
                 textAlign: "right",
                 fontSize: "12px",
