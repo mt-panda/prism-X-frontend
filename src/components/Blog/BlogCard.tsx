@@ -47,7 +47,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ data, itemsPerPage }) => {
           {...({} as any)}
         >
           <Link
-            to={`/blog/${item.id}`}
+            to={`/blogdetail/${item.id}`}
             style={{ textDecoration: "none" }}
           >
             <Card

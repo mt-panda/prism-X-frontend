@@ -138,9 +138,6 @@ const Home: React.FC = () => {
                   justifyContent={"flex-end"}
                 >
                   <Grid
-                    item
-                    xs={0}
-                    lg={1.5}
                     component="div"
                     {...({} as any)}
                   ></Grid>
@@ -194,10 +191,6 @@ const Home: React.FC = () => {
                   </Grid>
 
                   <Grid
-                    item
-                    xs={12}
-                    sm={2.9}
-                    lg={2.6}
                     sx={{
                       borderRight: {
                         xs: "0px solid #dee2e8",
@@ -246,10 +239,6 @@ const Home: React.FC = () => {
                   </Grid>
 
                   <Grid
-                    item
-                    xs={12}
-                    sm={2.9}
-                    lg={2.6}
                     sx={{
                       borderRight: {
                         xs: "0px solid #dee2e8",
@@ -298,10 +287,6 @@ const Home: React.FC = () => {
                   </Grid>
 
                   <Grid
-                    item
-                    xs={12}
-                    sm={2.9}
-                    lg={2.6}
                     sx={{
                       marginTop: "10px",
                       width: "22%",

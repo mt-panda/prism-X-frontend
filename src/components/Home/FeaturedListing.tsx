@@ -117,10 +117,6 @@ const FeaturedListing: React.FC = () => {
             {featuredListings.map((item) => (
               <Grid
                 key={item.id}
-                item
-                xs={12}
-                sm={6}
-                md={4}
                 sx={{ padding: { xs: "5px", sm: "9px", md: "0px" } }}
                 component="div"
                 {...({} as any)}

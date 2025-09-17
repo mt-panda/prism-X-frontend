@@ -22,8 +22,6 @@
 //   );
 // }
 
-
-
 import React, { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AuthProvider } from "../src/context/auth-context.tsx";
@@ -72,9 +70,6 @@ const NotFoundLayout = () => (
 );
 
 const App = () => {
-
-  
-
   return (
     <AuthProvider>
       <ListingsProvider>
@@ -89,7 +84,6 @@ const App = () => {
 };
 
 const AppRoutes = () => {
-
   const { fetchListings } = useListings();
 
   useEffect(() => {
@@ -146,9 +140,9 @@ const AppRoutes = () => {
           element: (
             <ProtectedRoute>
               {/* <PendingCounterProvider> */}
-                {/* <DashboardProvider> */}
-                  <DashBoard />
-                {/* </DashboardProvider> */}
+              {/* <DashboardProvider> */}
+              <DashBoard />
+              {/* </DashboardProvider> */}
               {/* </PendingCounterProvider> */}
             </ProtectedRoute>
           ),
