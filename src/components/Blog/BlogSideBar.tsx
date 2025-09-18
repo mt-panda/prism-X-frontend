@@ -62,7 +62,7 @@ const BlogSideBar: React.FC = () => {
           {recentPosts.map((item, index) => (
             <Link
               key={`post-${index}`}
-              to={`/blog/${item.id}`}
+              to={`/blogdetail/${item.id}`}
               style={{ textDecoration: "none", color: "inherit" }}
             >
               <Typography
@@ -115,7 +115,7 @@ const BlogSideBar: React.FC = () => {
           {recentPosts.map((item, index) => (
             <Link
               key={`comment-${index}`}
-              to={`/blog/${item.id}`}
+              to={`/blogdetail/${item.id}`}
               style={{ textDecoration: "none", color: "inherit" }}
             >
               <Typography

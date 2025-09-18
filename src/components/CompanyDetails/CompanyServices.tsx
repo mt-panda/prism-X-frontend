@@ -5,7 +5,7 @@ import Arrow from "../../assets/images/line-arrow.png";
 /* ---------------- Types ---------------- */
 interface CompanyServicesProps {
   background?: string;
-  service?: string[];
+  service?: string[] | string | null; // allow array, string, or null
   isAPIRunning?: boolean;
   phone?: string;
 }
@@ -62,8 +62,25 @@ export const StyledHeading = styled(Typography)(({ theme }) => ({
 }));
 
 /* ---------------- Helpers ---------------- */
-const formatServices = (services?: string[]): string => {
-  if (!services || services.length === 0) return "";
+const formatServices = (services?: string[] | string | null): string => {
+  if (!services) return "";
+
+  // If backend sends JSON string
+  if (typeof services === "string") {
+    try {
+      const parsed = JSON.parse(services);
+      if (Array.isArray(parsed)) {
+        services = parsed;
+      } else {
+        return services.toLowerCase();
+      }
+    } catch {
+      return typeof services === 'string' ? services.toLowerCase() : '';
+    }
+  }
+
+  if (!Array.isArray(services) || services.length === 0) return "";
+
   if (services.length === 1) return services[0].toLowerCase();
   if (services.length === 2)
     return `${services[0].toLowerCase()} and ${services[1].toLowerCase()}`;
@@ -126,7 +143,6 @@ const CompanyServices: React.FC<CompanyServicesProps> = ({
         }}
       />
       <Box
-        container
         width="100%"
         sx={{
           pl: { sm: "50px", xs: "10px" },

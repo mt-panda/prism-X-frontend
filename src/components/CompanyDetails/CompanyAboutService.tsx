@@ -88,7 +88,7 @@ const CompanyAboutService: React.FC<CompanyAboutServiceProps> = ({
             display: "block",
             position: { lg: "absolute", md: "relative" },
             right: { lg: "70%", md: "0" },
-            top: { lg: "6%", md: "0" },
+            top: { lg: "10%", md: "0" },
             width: { lg: "800px", md: "100%" },
             height: { lg: "400px", md: "auto", sm: "auto", xs: "auto" },
             bgcolor: theme.palette.common.white,
