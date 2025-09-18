@@ -6,11 +6,11 @@ export interface AuthContextType {
   isLoggedIn: boolean;
   token: string | null;
   userId: string | null;
-  userRole: number | null; 
+  userRole: "user" | "admin" | null;
   userEmail: string | null;
   login: (
     userId: string,
-    userRole: number,
+    userRole: "user" | "admin",
     token: string,
     userEmail: string,
     expirationDate?: Date
@@ -29,8 +29,10 @@ export const AuthContext = createContext<AuthContextType>({
   logout: () => {},
 });
 
-/* ---------------- Context Provider Component ---------------- */
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+/* ---------------- Provider ---------------- */
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { token, login, logout, userId, userRole, userEmail } = useAuthHook();
 
   const value: AuthContextType = {
@@ -43,11 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 /* ---------------- Hook ---------------- */

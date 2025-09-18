@@ -146,7 +146,7 @@ const PropertyItemCard: React.FC<PropertyItemCardProps> = ({
           />
 
           {/* Edit/Delete buttons */}
-          {auth.isLoggedIn && auth.userRole === 1 && (
+          {auth.isLoggedIn && auth.userRole === "admin" && (
             <Box
               sx={{
                 display: "flex",

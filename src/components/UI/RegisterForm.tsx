@@ -69,11 +69,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
 
         auth.login(user.id, user.role, token, user.email);
 
-        if (user.role === "admin") {
-          navigate("/dashboard/createuser");
-        } else {
-          navigate("/dashboard/createlisting");
-        }
+        
+          navigate("/dashboard");
+       
 
         if (setIsModalOpen) {
           setIsModalOpen(false);

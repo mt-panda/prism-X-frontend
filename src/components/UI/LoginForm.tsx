@@ -7,12 +7,17 @@ import { useNavigate } from "react-router-dom";
 import CircularProgress from "@mui/material/CircularProgress";
 
 interface LoginFormProps {
-  handleOpenModal?: () => void;
+  handleOpenModal?: (mode: "signin" | "register" | "resetPassForm") => void;
+
   setIsModalOpen?: (open: boolean) => void;
   loginref?: React.RefObject<HTMLInputElement>;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ handleOpenModal, setIsModalOpen, loginref }) => {
+const LoginForm: React.FC<LoginFormProps> = ({
+  handleOpenModal,
+  setIsModalOpen,
+  loginref,
+}) => {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const auth = useContext(AuthContext);
   const navigate = useNavigate();
@@ -71,8 +76,11 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleOpenModal, setIsModalOpen, 
 
     try {
       console.log("Attempting login with backend URL:", backendUrl);
-      console.log("Login payload:", { email: userEmail, password: userPassword });
-      
+      console.log("Login payload:", {
+        email: userEmail,
+        password: userPassword,
+      });
+
       console.log("About to make fetch request...");
       const response = await fetch(`${backendUrl}/users/login`, {
         method: "POST",
@@ -84,31 +92,24 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleOpenModal, setIsModalOpen, 
           password: userPassword,
         }),
       });
-            console.log("Fetch request completed, response received");
+      console.log("Fetch request completed, response received");
       console.log("Response status:", response.status);
-      console.log("Response headers:", Object.fromEntries(response.headers.entries()));
-      
+      console.log(
+        "Response headers:",
+        Object.fromEntries(response.headers.entries())
+      );
+
       console.log("About to parse response JSON...");
       const responseData = await response.json();
       console.log("Response JSON parsed successfully");
       console.log("Login response:", responseData);
-      
+
       if (response.ok && responseData.success) {
         const { user, token } = responseData.data;
 
-        auth.login(
-          user.id,
-          user.role,
-          token,
-          user.email
-        );
+        auth.login(user.id, user.role, token, user.email);
 
-        if (user.role === "admin") {
-          navigate("/dashboard/createuser");
-        } else if (user.role === "user") {
-          navigate("/dashboard/createlisting");
-        }
-        
+        navigate("/dashboard");
 
         if (setIsModalOpen) {
           setIsModalOpen(false);
@@ -268,7 +269,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ handleOpenModal, setIsModalOpen, 
                 style={{
                   cursor: "pointer",
                 }}
-                onClick={handleOpenModal ? handleOpenModal : undefined}
+                onClick={handleOpenModal ? () => handleOpenModal("register") : undefined}
               >
                 {" "}
                 Register

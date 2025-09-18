@@ -5,7 +5,7 @@ let logoutTimer: ReturnType<typeof setTimeout>;
 /* ---------------- Types ---------------- */
 type LoginFn = (
   uid: string,
-  role: number,
+  role: "user" | "admin",
   tokens: string,
   email: string,
   expirationDate?: Date
@@ -16,7 +16,7 @@ interface UseAuthReturn {
   login: LoginFn;
   logout: () => void;
   userId: string | null;
-  userRole: number | null;
+  userRole: "user" | "admin" | null;
   userEmail: string | null;
 }
 
@@ -26,13 +26,20 @@ export const useAuth = (): UseAuthReturn => {
     null
   );
   const [userId, setUserId] = useState<string | null>(null);
-  const [userRole, setRole] = useState<number | null>(null);
+  const [userRole, setRole] = useState<"user" | "admin" | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
 
+  /* ---------------- Login ---------------- */
   const login = useCallback<LoginFn>(
     (uid, role, tokens, email, expirationDate) => {
-      console.log("Auth hook login called with:", { uid, role, tokens: tokens ? "exists" : "missing", email, expirationDate });
-      
+      console.log("Auth hook login called with:", {
+        uid,
+        role,
+        tokens: tokens ? "exists" : "missing",
+        email,
+        expirationDate,
+      });
+
       setToken(tokens);
       setUserId(uid);
       setRole(role);
@@ -43,16 +50,17 @@ export const useAuth = (): UseAuthReturn => {
       setTokenExpirationDate(tokenExpiration);
 
       localStorage.setItem("userId", uid);
-      localStorage.setItem("userRole", String(role));
+      localStorage.setItem("userRole", role); // stored as "user" | "admin"
       localStorage.setItem("userEmail", email);
       localStorage.setItem("token", tokens);
       localStorage.setItem("expiration", tokenExpiration.toISOString());
-      
+
       console.log("Auth state and localStorage updated");
     },
     []
   );
 
+  /* ---------------- Logout ---------------- */
   const logout = useCallback(() => {
     setToken(null);
     setTokenExpirationDate(null);
@@ -65,9 +73,9 @@ export const useAuth = (): UseAuthReturn => {
     localStorage.removeItem("userEmail");
     localStorage.removeItem("token");
     localStorage.removeItem("expiration");
-    localStorage.removeItem("userName");
   }, []);
 
+  /* ---------------- Auto-Logout Timer ---------------- */
   useEffect(() => {
     if (token && tokenExpirationDate) {
       const remainingTime =
@@ -78,9 +86,10 @@ export const useAuth = (): UseAuthReturn => {
     }
   }, [token, logout, tokenExpirationDate]);
 
+  /* ---------------- Auto-Login ---------------- */
   useEffect(() => {
     const uuid = localStorage.getItem("userId");
-    const role = localStorage.getItem("userRole");
+    const role = localStorage.getItem("userRole") as "user" | "admin" | null;
     const email = localStorage.getItem("userEmail");
     const token = localStorage.getItem("token");
     const expiry = localStorage.getItem("expiration");
@@ -91,14 +100,16 @@ export const useAuth = (): UseAuthReturn => {
       email,
       token: token ? "exists" : "missing",
       expiry,
-      isExpired: expiry ? new Date(expiry) <= new Date() : "no expiry"
+      isExpired: expiry ? new Date(expiry) <= new Date() : "no expiry",
     });
 
-    if (token && expiry && new Date(expiry) > new Date()) {
+    if (token && expiry && new Date(expiry) > new Date() && role) {
       console.log("Auto-login triggered");
-      login(uuid!, Number(role), token, email!, new Date(expiry));
+      login(uuid!, role, token, email!, new Date(expiry)); // ✅ role passed as string
     } else {
-      console.log("Auto-login not triggered - missing token or expired");
+      console.log(
+        "Auto-login not triggered - missing token, expired, or invalid role"
+      );
     }
   }, [login]);
 

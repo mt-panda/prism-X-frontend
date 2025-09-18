@@ -41,12 +41,9 @@ const FeaturedListing: React.FC = () => {
     fetchListings(1, 20); 
   }, []);
 
-  console.log("Latest Places: ", listings);
-
   const featuredListings = listings
     .filter((l) => Boolean(l.featured))
     .slice(0, 3);
-  console.log("featuredListings", featuredListings);
 
   return (
     <Box
