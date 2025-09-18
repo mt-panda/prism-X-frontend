@@ -231,7 +231,7 @@ const DashboardNavbar = ({ role }: { role: string }) => {
             aria-label="breadcrumb"
             sx={{ fontSize: 14, color: "text.secondary" }}
           >
-            <Link underline="hover" color="inherit" href="#">
+            <Link underline="hover" color="inherit" href="/">
               Home
             </Link>
             <Link underline="hover" color="inherit" href="#">
