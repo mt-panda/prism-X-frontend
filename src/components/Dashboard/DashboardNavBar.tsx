@@ -203,8 +203,10 @@ import SaveIcon from "@mui/icons-material/Save"; // placeholder
 import CodeIcon from "@mui/icons-material/Code"; // placeholder
 import PushPinIcon from "@mui/icons-material/PushPin"; // placeholder
 import ImageIcon from "@mui/icons-material/Image"; // placeholder
+import openIcon from "../../assets/images/navbar/openDrawer.png";
+import closeIcon from "../../assets/images/navbar/closeDrawer.png";
 
-const DashboardNavbar = ({ role }: { role: string }) => {
+const DashboardNavbar = ({ role, collapsed, setCollapsed }: { role: string; collapsed: boolean; setCollapsed: (collapsed: boolean) => void }) => {
   const theme = useTheme();
   return (
     <AppBar
@@ -225,6 +227,12 @@ const DashboardNavbar = ({ role }: { role: string }) => {
         {/* Left Side */}
         <Box flex={1}>
           <Typography variant="h6" fontWeight="600" color="text.primary">
+        <IconButton
+          onClick={() => setCollapsed(!collapsed)}
+          sx={{ color: theme.palette.common.white, pl:0,  }}
+        >
+          <img src={collapsed ? openIcon : closeIcon} alt="Toggle Sidebar" style={{ width: "25px" }} />
+        </IconButton>
             Dashboard
           </Typography>
           <Breadcrumbs
@@ -235,7 +243,15 @@ const DashboardNavbar = ({ role }: { role: string }) => {
               Home
             </Link>
             <Link underline="hover" color="inherit" href="#">
-              Dashboard <span style={{ color: theme.palette.primary.focus, textTransform: "capitalize" }}>({role})</span>
+              Dashboard{" "}
+              <span
+                style={{
+                  color: theme.palette.primary.focus,
+                  textTransform: "capitalize",
+                }}
+              >
+                ({role})
+              </span>
             </Link>
           </Breadcrumbs>
         </Box>

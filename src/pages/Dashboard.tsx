@@ -82,8 +82,13 @@
 
 // export default DashBoard;
 
-// Sidebar collapsed state: center everything
-import React, { useState } from "react";
+
+
+
+
+
+
+import React, { useState, useRef } from "react";
 import {
   Box,
   CssBaseline,
@@ -93,61 +98,41 @@ import {
   ListItemIcon,
   ListItemText,
   Typography,
-  IconButton,
   Divider,
-  Button,
   useTheme,
+  ClickAwayListener,
 } from "@mui/material";
 import ListIcon from "@mui/icons-material/List";
 import PendingActionsIcon from "@mui/icons-material/PendingActions";
 import GroupIcon from "@mui/icons-material/Group";
-import AddBoxIcon from "@mui/icons-material/AddBox";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import DashboardNavBar from "../components/Dashboard/DashboardNavBar";
+import ProfileModal from "../components/Dashboard/ProfileModal";
 import { Link } from "react-router-dom";
 import logo from "../assets/images/navbar/WhiteLogo.png";
 import collapsedLogo from "../assets/images/navbar/collapsedLogo.png";
-import openIcon from "../assets/images/navbar/openDrawer.png"
-import closeIcon from "../assets/images/navbar/closeDrawer.png"
 
-
-const drawerWidth = 350;
+const drawerWidth = 310;
 const collapsedWidth = 80;
-
-// Simulate user role (replace with actual auth context/props)
-const user = { role: "admin" }; // change to "user" to test
+const role = localStorage.getItem("userRole");
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("Listings");
   const [collapsed, setCollapsed] = useState(false);
   const theme = useTheme();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileModalRef = useRef<any>(null);
 
   const renderContent = () => {
     switch (activeTab) {
       case "Listings":
-        return (
-          <Typography variant="h5">
-            {/* Listings Section Placeholder */}
-          </Typography>
-        );
+        return <Typography variant="h5">{/* Listings Section */}</Typography>;
       case "Pending Listings":
         return (
-          <Typography variant="h5">
-            {/* Pending Listings Section Placeholder */}
-          </Typography>
+          <Typography variant="h5">{/* Pending Listings Section */}</Typography>
         );
       case "Users":
-        return (
-          <Typography variant="h5">
-            {/* Users Section Placeholder */}
-          </Typography>
-        );
-      case "Profile":
-        return (
-          <Typography variant="h5">
-            {/* Profile Section Placeholder */}
-          </Typography>
-        );
+        return <Typography variant="h5">{/* Users Section */}</Typography>;
       default:
         return <Typography variant="h5">Dashboard</Typography>;
     }
@@ -193,39 +178,28 @@ const Dashboard: React.FC = () => {
           width: "100%",
         }}
       >
-        {!collapsed && (
-          <>
-            <Box
-              sx={{
+        {!collapsed ? (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              flexGrow: 1,
+              overflow: "hidden",
+            }}
+          >
+            <Link
+              style={{
+                textDecoration: "none",
                 display: "flex",
                 alignItems: "center",
-                gap: 1,
-                flexGrow: 1,
-                overflow: "hidden",
               }}
+              to="/"
             >
-              {/* <BoltIcon
-              sx={{
-                color: theme.palette.primary.focus,
-                fontSize: 30,
-                textShadow: "0 0 20px white",
-              }}
-            /> */}
-
-              <Link
-                style={{
-                  textDecoration: "none",
-                  display: "flex",
-                  alignItems: "center",
-                }}
-                to="/"
-              >
-                <img src={logo} alt="logo" style={{ width: "200px" }} />
-              </Link>
-            </Box>
-          </>
-        )}
-        {collapsed && (
+              <img src={logo} alt="logo" style={{ width: "200px" }} />
+            </Link>
+          </Box>
+        ) : (
           <Link
             style={{
               textDecoration: "none",
@@ -236,16 +210,6 @@ const Dashboard: React.FC = () => {
           >
             <img src={collapsedLogo} alt="logo" style={{ width: "50px" }} />
           </Link>
-        )}
-
-        {!collapsed && (
-          <IconButton
-            onClick={() => setCollapsed(!collapsed)}
-            sx={{ color: theme.palette.common.white }}
-          >
-            <img src={closeIcon} alt="Toggle Sidebar" style={{ width: "25px" }} />
-
-          </IconButton>
         )}
       </Box>
 
@@ -267,7 +231,7 @@ const Dashboard: React.FC = () => {
           <ListItemIcon
             sx={{ color: "inherit", minWidth: collapsed ? "auto" : 56 }}
           >
-            {<ListIcon />}
+            <ListIcon />
           </ListItemIcon>
           {!collapsed && <ListItemText primary="Listings" />}
         </ListItem>
@@ -279,12 +243,12 @@ const Dashboard: React.FC = () => {
           <ListItemIcon
             sx={{ color: "inherit", minWidth: collapsed ? "auto" : 56 }}
           >
-            {<PendingActionsIcon />}
+            <PendingActionsIcon />
           </ListItemIcon>
           {!collapsed && <ListItemText primary="Pending Listings" />}
         </ListItem>
 
-        {user.role === "admin" && (
+        {role === "admin" && (
           <ListItem
             component="div"
             onClick={() => setActiveTab("Users")}
@@ -293,65 +257,33 @@ const Dashboard: React.FC = () => {
             <ListItemIcon
               sx={{ color: "inherit", minWidth: collapsed ? "auto" : 56 }}
             >
-              {<GroupIcon />}
+              <GroupIcon />
             </ListItemIcon>
             {!collapsed && <ListItemText primary="Users" />}
           </ListItem>
         )}
       </List>
 
-      {/* Add New Listing button above divider */}
-      {/* <Box
-        sx={{
-          px: collapsed ? 0 : 2,
-          py: 1,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Button
-          variant="contained"
-          color="primary"
-          fullWidth={!collapsed}
-          startIcon={!collapsed ? <AddBoxIcon /> : null}
-          onClick={() => setActiveTab("Listings")}
-          sx={{
-            bgcolor: theme.palette.primary.focus,
-            textTransform: "none",
-            borderRadius: collapsed ? "50%" : "999px",
-            fontWeight: "bold",
-            minWidth: collapsed ? 50 : "auto",
-            width: collapsed ? 50 : "100%",
-            height: collapsed ? 50 : 48,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mx: collapsed ? 0 : "auto",
-          }}
-        >
-          {collapsed ? <AddBoxIcon /> : "Add New Listing"}
-        </Button>
-      </Box> */}
-
       {/* Divider above Profile */}
-      <Divider sx={{ bgcolor: "#444", width: "100%" }} />
+      <Divider sx={{ bgcolor: theme.palette.primary.main, opacity: 0.5, width: "100%" }} />
       <List
         sx={{
-          mb: 2,
+          my: 2,
           display: "flex",
           justifyContent: collapsed ? "center" : "flex-start",
         }}
       >
         <ListItem
           component="div"
-          onClick={() => setActiveTab("Profile")}
+          onClick={() => {
+            setProfileOpen(true)
+          }}
           sx={getItemStyles("Profile")}
         >
           <ListItemIcon
             sx={{ color: "inherit", minWidth: collapsed ? "auto" : 56 }}
           >
-            {<AccountCircleIcon sx={{ fontSize: 40 }} />}
+            <AccountCircleIcon sx={{ fontSize: 40 }} />
           </ListItemIcon>
           {!collapsed && <ListItemText primary="Profile" />}
         </ListItem>
@@ -411,44 +343,12 @@ const Dashboard: React.FC = () => {
           position: "relative",
         }}
       >
-        {collapsed && (
-          <IconButton
-            onClick={() => setCollapsed(!collapsed)}
-            sx={{
-              color: theme.palette.primary.hero,
-              position: "absolute",
-              left: 5,
-              top:-20
-            }}
-          >
-            <img
-              src={openIcon}
-              alt="Toggle Sidebar"
-              style={{ width: "25px" }}
-            />
-          </IconButton>
-        )}
-        {/* Placeholder NavBar */}
-        {/* <Box
-          sx={{
-            bgcolor: "rgb(0, 0, 0)",
-            height: "50px",
-            width: "100%",
-            flex: 1,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: theme.palette.common.white,
-            borderRadius: "50px",
-            mb: 2,
-          }}
-        > */}
-          <DashboardNavBar role={user.role} />
+        <DashboardNavBar
+          role={role || ""}
+          collapsed={collapsed}
+          setCollapsed={setCollapsed}
+        />
 
-          {/* <Typography variant="body1">Placeholder NavBar</Typography> */}
-        {/* </Box> */}
-
-        {/* Dynamic content */}
         <Box
           sx={{
             flexGrow: 1,
@@ -459,9 +359,30 @@ const Dashboard: React.FC = () => {
         >
           {renderContent()}
         </Box>
+
+        {/* Profile Modal with click-away close */}
+        <ClickAwayListener
+          onClickAway={() => {
+            if (profileModalRef.current) profileModalRef.current.close();
+          }}
+        >
+          <Box>
+            <ProfileModal
+              open={profileOpen}
+              onClose={() => setProfileOpen(false)}
+              role={role || undefined}
+              collapsed={collapsed}
+            />
+          </Box>
+        </ClickAwayListener>
       </Box>
     </Box>
   );
 };
 
 export default Dashboard;
+
+
+
+
+
