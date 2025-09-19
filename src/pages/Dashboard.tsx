@@ -111,6 +111,7 @@ import ProfileModal from "../components/Dashboard/ProfileModal";
 import { Link } from "react-router-dom";
 import logo from "../assets/images/navbar/WhiteLogo.png";
 import collapsedLogo from "../assets/images/navbar/collapsedLogo.png";
+import Listings from "../pages/Listings"
 
 const drawerWidth = 310;
 const collapsedWidth = 80;
@@ -126,7 +127,7 @@ const Dashboard: React.FC = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "Listings":
-        return <Typography variant="h5">{/* Listings Section */}</Typography>;
+        return <Listings/>;
       case "Pending Listings":
         return (
           <Typography variant="h5">{/* Pending Listings Section */}</Typography>
